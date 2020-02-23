@@ -1,5 +1,8 @@
+import 'dart:collection';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -92,6 +95,7 @@ class _PageAyatChooserState extends State<PageAyatChooser> {
           if (mAyat["ar"].toString().indexOf(_filter) < 0) continue; //. skip
         }
       }
+
       lstRes.add(Column(
         children: <Widget>[
           Container(
@@ -103,7 +107,10 @@ class _PageAyatChooserState extends State<PageAyatChooser> {
                     children: <Widget>[
                       Container(
                         alignment: Alignment.topLeft,
-                        child: Text("${mAyat["id"]}", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                        child: TextHighlight(
+                            text:  mAyat["id"],
+                            word: _filter,
+                            textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),),
                       ),
                       Container(
                         alignment: Alignment.topLeft,
@@ -327,5 +334,90 @@ class _PageAyatChooserState extends State<PageAyatChooser> {
         ),
       ),
     );
+  }
+}
+
+//. modify from source https://github.com/desconexo/highlight_text
+
+class TextHighlight extends StatelessWidget {
+  final String text;
+  final String word;
+  final TextStyle textStyle;
+  final TextAlign textAlign;
+  final TextDirection textDirection;
+  final bool softWrap;
+  final TextOverflow overflow;
+  final double textScaleFactor;
+  final int maxLines;
+  final Locale locale;
+  final StrutStyle strutStyle;
+
+  TextHighlight({
+    @required this.text,
+    @required this.word,
+    this.textStyle = const TextStyle(
+      fontSize: 16.0,
+      color: Colors.black,
+    ),
+    this.textAlign = TextAlign.start,
+    this.textDirection,
+    this.softWrap = true,
+    this.overflow = TextOverflow.clip,
+    this.textScaleFactor = 1.0,
+    this.maxLines,
+    this.locale,
+    this.strutStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> _textWords = List();
+    if (!word?.isEmpty)
+      _textWords = text.split(word);
+    return RichText(
+      text: buildSpan(_textWords),
+      locale: locale,
+      maxLines: maxLines,
+      overflow: overflow,
+      softWrap: softWrap,
+      strutStyle: strutStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      textScaleFactor: textScaleFactor,
+    );
+  }
+
+  TextSpan buildSpan(List<String> words) {
+    List<TextSpan> lstSpan = [];
+    for (int i = 0; i < words.length; i++){
+      String m = words[i];
+      if (m == null || m?.isEmpty){
+        lstSpan.add(TextSpan(
+          text: this.word,  style: TextStyle(fontSize: this.textStyle.fontSize, backgroundColor: Colors.yellowAccent)
+        ));
+      }else{
+        lstSpan.add(TextSpan(
+            text: m,  style: this.textStyle
+        ));
+        if (i >= 0 && i < (words.length - 1)){
+          lstSpan.add(TextSpan(
+              text: this.word,  style: TextStyle(fontSize: this.textStyle.fontSize, backgroundColor: Colors.yellowAccent)
+          ));
+        }
+      }
+    }
+    if (!(this.word == null || this.word?.isEmpty)){
+      return TextSpan(
+        text: '',
+        style: this.textStyle,
+        children: lstSpan,
+      );
+    }else{
+      return TextSpan(
+        text: this.text,
+        style: this.textStyle,
+      );
+    }
+
   }
 }
